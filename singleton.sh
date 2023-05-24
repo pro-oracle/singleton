@@ -43,7 +43,7 @@ __ARGV__=$@
 __HASH__=$(echo -n "${__ARGV__}" | md5sum 2>/dev/null | cut -f 1 -d " ")
 __SCRIPTNAME__="${0##*/}"
 __FILEPREFIX__=${__SCRIPTNAME__%%.*}
-__LOCKFILE__=/tmp/${__FILEPREFIX__}_${ORACLE_SID}_${__HASH__}.lock
+__LOCKFILE__=/tmp/${__FILEPREFIX__}_${__HASH__}.lock
 __status__="INACTIVE"
 
 if ! __acquire_lock__ ${__LOCKFILE__}; then
