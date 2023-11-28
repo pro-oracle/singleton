@@ -1,3 +1,4 @@
+
 __acquire_lock__() {
     if [[ -z $1 ]]; then
       echo No lock file name supplied;
@@ -6,7 +7,7 @@ __acquire_lock__() {
       if [ -f $1 ]; then
         echo $1 exists. Checking if the script still active
         local pid=$(cat $1)
-        if ps -o args=  -p $pid | grep -q ${__SCRIPTNAME__}; then
+        if ps -o args=  -p $pid | grep -q ${__SCRIPT__}; then
             echo Script is active. Cannot acquire lock
             return 1
         else
@@ -40,11 +41,16 @@ trap 'if [[ ${__status__} == "ACTIVE" ]]; then __release_lock__ ${__LOCKFILE__};
 trap 'echo $BASH_COMMAND failed at $LINENO; exit' ERR
 
 __ARGV__=$@
-__HASH__=$(echo -n "${__ARGV__}" | md5sum 2>/dev/null | cut -f 1 -d " ")
-__SCRIPTNAME__="${0##*/}"
-__FILEPREFIX__=${__SCRIPTNAME__%%.*}
-__LOCKFILE__=/tmp/${__FILEPREFIX__}_${__HASH__}.lock
+__SCRIPTNAME__=$(basename $0)
+pushd $(dirname $0) > /dev/null
+__SCRIPTPATH__=$PWD
+popd > /dev/null
+__SCRIPT__=${__SCRIPTPATH__}/${__SCRIPTNAME__}
+__HASH__=$(printf "${__SCRIPT__} ${__ARGV__}" | md5sum 2>/dev/null | cut -f 1 -d " ")
+__LOCKFILE__=${__SCRIPT__}_${__HASH__}.lock
 __status__="INACTIVE"
+
+[ "${FLOCKER}" != "${__SCRIPT__}" ] && exec env FLOCKER="${__SCRIPT__}" bash -c "${__SCRIPT__} $@" || :
 
 if ! __acquire_lock__ ${__LOCKFILE__}; then
   echo Instance of the script already running;
@@ -52,4 +58,5 @@ if ! __acquire_lock__ ${__LOCKFILE__}; then
 fi
 
 __status__='ACTIVE'
+
 
