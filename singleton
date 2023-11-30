@@ -50,7 +50,7 @@ __HASH__=$(printf "${__SCRIPT__} ${__ARGV__}" | md5sum 2>/dev/null | cut -f 1 -d
 __LOCKFILE__=${__SCRIPT__}_${__HASH__}.lock
 __status__="INACTIVE"
 
-[ "${FLOCKER}" != "${__SCRIPT__}" ] && exec env FLOCKER="${__SCRIPT__}" bash -c "${__SCRIPT__} $@" || :
+[ "${FLOCKER}" != "${__SCRIPT__}" ] && exec env FLOCKER="${__SCRIPT__}" bash -c "${__SCRIPT__} ${__ARGV__}" || :
 
 if ! __acquire_lock__ ${__LOCKFILE__}; then
   echo Instance of the script already running;
